@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv('parcel_data.csv')
+df = pd.read_csv('attributesV1.csv')
 
 duplicates = df[df.duplicated()]
 
