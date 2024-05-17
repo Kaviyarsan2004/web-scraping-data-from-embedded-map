@@ -1,7 +1,7 @@
 import requests
 import csv
 
-# Define fieldnames globally
+
 fieldnames = [
     "FID", "PIN", "Type", "PA_KEY_NO", "PRINTKEY", "TM_OWNAM", 
     "TM_MAILAD1", "TM_MAILAD2", "TM_SWIS", "TM_ASSES_U", 
@@ -13,25 +13,19 @@ fieldnames = [
 
 def fetch_and_save_batch(url, params, csvfile, unique_entries):
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    
-    # Send GET request
+
     response = requests.get(url, params=params)
     
-    # Check if the request was successful (status code 200)
     if response.status_code == 200:
-        # Parse JSON response
         data = response.json()
-        
-        # Extract and save records to CSV
         features = data.get("features", [])
         for feature in features:
             attributes = feature.get("attributes", {})
             print("PRINTKEY:", attributes.get("PRINTKEY"))
             print("TM_OWNAM:", attributes.get("TM_OWNAM"))
             print() 
-            # Check if the entry is unique
             if attributes["PRINTKEY"] not in unique_entries:
-                unique_entries.add(attributes["PRINTKEY"])  # Add PRINTKEY to the set of unique entries
+                unique_entries.add(attributes["PRINTKEY"]) 
                 writer.writerow(attributes)
         
         return data.get("exceededTransferLimit", False)
@@ -40,37 +34,34 @@ def fetch_and_save_batch(url, params, csvfile, unique_entries):
         return False
 
 def fetch_all_features(url, params):
-    with open('map_data.csv', 'w', newline='', encoding='utf-8') as csvfile:  # Specify UTF-8 encoding
+    with open('map_data.csv', 'w', newline='', encoding='utf-8') as csvfile:  
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         
-        unique_entries = set()  # Set to store unique PRINTKEY values
+        unique_entries = set()  
         
         while True:
-            # Check if there are more features to fetch
             if not fetch_and_save_batch(url, params, csvfile, unique_entries):
                 break
-            # Increment the result offset for the next request
             params["resultOffset"] = params.get("resultOffset", 0) + 1000
 
-# Define the URL
+
 url = "https://services2.arcgis.com/NZkLeERo9XICXiuy/arcgis/rest/services/Real_Property_Parcel_Viewer/FeatureServer/1/query"
 
-# Define the query parameters
+
 params = {
-    "f": "json",  # Specify response format as JSON
+    "f": "json",  
     "returnGeometry": "false",
     "spatialRel": "esriSpatialRelIntersects",
-    "geometry": '{"xmin":-20037700,"ymin":-30241100,"xmax":20037700,"ymax":30241100,"spatialReference":{"wkid":102100}}', # Entire extent
+    "geometry": '{"xmin":-20037700,"ymin":-30241100,"xmax":20037700,"ymax":30241100,"spatialReference":{"wkid":102100}}',
     "geometryType": "esriGeometryEnvelope",
     "inSR": 102100,
     "outFields": ",".join(fieldnames),
     "returnCentroid": "false",
-    "returnExceededLimitFeatures": "true",  # Ensure to return exceeded limit features
+    "returnExceededLimitFeatures": "true",  
     "outSR": 102100,
     "resultType": "tile",
     "quantizationParameters": '{"mode":"view","originPosition":"upperLeft","tolerance":9.55462853564454,"extent":{"xmin":-20037700,"ymin":-30241100,"xmax":20037700,"ymax":30241100,"spatialReference":{"wkid":102100,"_geVersion":{"pp":"","ou":null,"gg":102100,"Ho":-1,"$H":-1,"wh":null}}}}'
 }
 
-# Fetch all features and save only unique entries to CSV
 fetch_all_features(url, params)
