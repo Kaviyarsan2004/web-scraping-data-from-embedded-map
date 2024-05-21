@@ -1,17 +1,14 @@
 import pandas as pd
 
-# Load the CSV file into a DataFrame
-df = pd.read_csv("Extracted_data.csv", delimiter='\t')
+# Load the CSV file
+file_path = 'overlaped_CPA_parcel_Bm.csv'
+df = pd.read_csv(file_path)
 
-# Identify duplicate rows based on all columns
-duplicate_rows = df[df.duplicated()]
+# Remove duplicate rows
+df_cleaned = df.drop_duplicates()
 
-if len(duplicate_rows) > 0:
-    print("Duplicate rows found. Removing them...")
-    # Drop duplicate rows
-    df = df.drop_duplicates()
-    # Write the DataFrame back to a CSV file
-    df.to_csv("your_file_without_duplicates.csv", sep='\t', index=False)
-    print("Duplicate rows removed. Updated file saved.")
-else:
-    print("No duplicate rows found.")
+# Save the cleaned data to a new CSV file
+output_file_path = 'cleaned_file.csv'
+df_cleaned.to_csv(output_file_path, index=False)
+
+print(f"Duplicates removed. Cleaned data saved to {output_file_path}")

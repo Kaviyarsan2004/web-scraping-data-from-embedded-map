@@ -9,15 +9,15 @@ url = "https://gis.broomecountyny.gov/arcgis/rest/services/parcels/br_parcels/Ma
 unique_ids = set()
 
 # Define the range
-start_range_x = 100  # Start of the range (inclusive)
-end_range_x = 200    # End of the range (exclusive)
+start_range_x = 800  # Start of the range (inclusive)
+end_range_x = 1000    # End of the range (exclusive)
 
 # Generate a random number within the range
 random_number_x = random.uniform(start_range_x, end_range_x)
 
 # Define the range
-start_range_y = 100  # Start of the range (inclusive)
-end_range_y = 200    # End of the range (exclusive)
+start_range_y = 700  # Start of the range (inclusive)
+end_range_y = 900    # End of the range (exclusive)
 
 # Generate a random number within the range
 random_number_y = random.uniform(start_range_x, end_range_x)
@@ -30,11 +30,11 @@ with open('extracted_data_summa.csv', mode='r') as csv_file:
 
 # Open CSV file in append mode
 with open('extracted_data_summa_1.csv', mode='a', newline='') as csv_file:
-    fieldnames = ['FID', 'ID', 'NAME', 'ADDRESS', 'ZIP', 'MUNI', 'MAIL_ADDR', 'MAIL_CITY', 'LANDUSE', 'LAT', 'LONG', 'SWISID', 'TAXMAP', 'LOCATION']
+    fieldnames = ['FID', 'ID', 'NAME', 'ADDRESS', 'ZIP', 'MUNI', 'MAIL_ADDR', 'MAIL_CITY', 'LANDUSE', 'LAT', 'LONG', 'SWISID', 'TAXMAP', 'LOCATION', 'geometry']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     
     # Write CSV header
-    # writer.writeheader()
+    writer.writeheader()
 
     # Define the step size for the grid
     step_x = random_number_x
@@ -42,10 +42,10 @@ with open('extracted_data_summa_1.csv', mode='a', newline='') as csv_file:
 
 
     # Define the initial x & y value
-    x =1062310.6985232728
-    y=767545.505026855
+    x = 942622.3889999962
+    y=728658.8809999948
     # Increment x until it reaches the maximum value
-    while x <=  1151663.622417932:
+    while x <=  1152561.9099999992:
         image_display = "1532,281,96"
         # Parameters for the API request
         params = {
@@ -69,11 +69,14 @@ with open('extracted_data_summa_1.csv', mode='a', newline='') as csv_file:
         if response.status_code == 200:
             # Parse JSON response
             data = response.json()
-
+            print(data)
             extracted_data = []
             for result in data.get("results", []):
                 attributes = result.get("attributes", {})
+                geometry=result.get("geometry",{})
+                
                 ID = attributes.get("ID")
+
                 if ID not in unique_ids:
                     print("ID:", ID)
                     print("Name:", attributes.get("NAME"))
@@ -106,10 +109,10 @@ with open('extracted_data_summa_1.csv', mode='a', newline='') as csv_file:
         # Increment x by step
         x += step_x
         csv_file.flush()
-        if x > 1137023.3364511523:
-            x=950095.4897688426
+        if x > 1151663.622417932:
+            x=942622.3889999962
             y+=step_y
-        if y>801669.4572406365:
+        if y>880891.906999997:
             break
 
 print("Data extraction and saving to CSV complete.")
